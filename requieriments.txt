@@ -1,0 +1,5 @@
+fastapi 
+uvicorn 
+websockets 
+langchain 
+langchain_openai
