@@ -10,6 +10,7 @@ import json
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import asyncio
+from fastapi.templating import Jinja2Templates
 
 app = FastAPI(title="LM Studio Streaming Chatbot")
 
@@ -51,13 +52,16 @@ def get_llm_response(user_query: str, chat_history: List[dict]):
         "chat_history": chat_history,
         "user_question": user_query,
     })
-app.mount("/static", StaticFiles(directory="."), name="static")
+
+# Serve static files (CSS, JS)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# Serve templates
+templates = Jinja2Templates(directory="templates")
 
 @app.get("/")
 async def read_root():
     return FileResponse("templates/index.html")
-
-
 
 @app.websocket("/chat")
 async def websocket_endpoint(websocket: WebSocket):
@@ -68,7 +72,7 @@ async def websocket_endpoint(websocket: WebSocket):
             # Receive message from client
             data = await websocket.receive_text()
             request_data = json.loads(data)
-            
+            print(data,request_data)   
             # Get chat history and user query
             chat_history = request_data.get("chat_history", [])
             user_query = request_data.get("user_query", "")
@@ -82,12 +86,12 @@ async def websocket_endpoint(websocket: WebSocket):
                     formatted_history.append(HumanMessage(content=msg["content"]))
             
             # Get streaming response
-            async for chunk in get_llm_response(user_query, formatted_history):
+            for chunk in get_llm_response(user_query, formatted_history):
+                print(chunk)
                 await websocket.send_text(json.dumps({
                     "type": "chunk",
                     "content": chunk
                 }))
-            
             # Send end message
             await websocket.send_text(json.dumps({
                 "type": "end"
@@ -97,7 +101,6 @@ async def websocket_endpoint(websocket: WebSocket):
         print(f"Error: {e}")
         await websocket.close()
 
-# Optional: Add a simple REST endpoint for non-streaming chat
 @app.post("/chat/simple")
 async def chat_simple(request: ChatRequest):
     messages = request.messages
