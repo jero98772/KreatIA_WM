@@ -1,4 +1,6 @@
-# KreatIA_WM
+# KreatIA_WM (archived proyect)
+
+i tryed to clone chatgpt voice asistent but my microphone is not working so i will abandon this for my home work
 
 a website that content operating systems aplications in one page
 ![](https://github.com/jero98772/Kreative_os/blob/main/docs/images/2.jpeg)
@@ -54,6 +56,10 @@ pip install -r requirements.txt
 uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
+run the application but in streamlit
+
+	pip install streamlit
+	streamlit run streamlit_asistent.py
 
 ## Usage
 1. Open the frontend in your browser.
